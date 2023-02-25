@@ -96,9 +96,9 @@ class propertyexportview(generics.GenericAPIView):
             reader.drop_duplicates(subset=["phone_number","adhar_num"],keep="last",inplace=True)
             
             for fields in (reader.values.tolist()):
-                filter_data=PropertyDetail.objects.filter(phone_number=fields[8],adhar_num=fields[11])
+                filter_data=PropertyDetail.objects.filter(owner=request.user, phone_number=fields[8],adhar_num=fields[11])
                 if filter_data.exists():
-                   continue
+                    continue
                 else:
                     PropertyDetail.objects.create(
                         owner=request.user,
@@ -121,6 +121,7 @@ class propertyexportview(generics.GenericAPIView):
             
             return Response(data={"success":"added new property"})
         return Response(data={"message":"not valid data","error":serialize.errors},status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class PropertyUpdateApiView(
