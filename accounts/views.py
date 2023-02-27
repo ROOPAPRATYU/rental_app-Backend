@@ -45,7 +45,7 @@ class TenetListView(generics.ListAPIView):
 
 class OwnerRegisterView(generics.CreateAPIView):
     serializer_class = OwnerRegisterSerializer
-    permission_classes = (AllowAny)
+    permission_classes = [AllowAny]
 
     def post(self, request: Request):
         serializer = self.serializer_class(data=request.data)
