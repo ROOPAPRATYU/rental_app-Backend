@@ -1,4 +1,4 @@
-from .serializers import CurrentUserPropertySerialzer,ImportSerializer,exporttoexcel
+from .serializers import CurrentUserPropertySerialzer,ImportSerializer
 
 from . permissions import OwnerOrReadObly
 from django.shortcuts import render, get_object_or_404
@@ -59,7 +59,7 @@ def get_properties_for_current_user(request: Request):
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-class PropertyDeletePutApiView(
+class PropertyUpdateApiView(
     generics.GenericAPIView,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -67,21 +67,35 @@ class PropertyDeletePutApiView(
 ):
     serializer_class = ProperySerializer
     queryset = PropertyDetail.objects.all()
-    # permission_classes = [IsAuthenticated, OwnerOrReadObly]
 
+    
     def put(self, request: Request, *args, **kwargs):
-        permission_classes = [OwnerOrReadObly] 
-        return self.update(request, *args, **kwargs)
+        return self.update(request,*args, **kwargs)
+    
+    def get(self,request:Request,pk=None,*args,**kwargs):
+        return self.retrieve(request,pk,*args,**kwargs)
 
-    def delete(self, request: Request, *args, **kwargs):
-        permission_classes=[OwnerOrReadObly]
-        return self.destroy(request, *args, **kwargs)
+
+class PropertyDeleteApiView(
+    generics.GenericAPIView,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+):
+    serializer_class = ProperySerializer
+    queryset = PropertyDetail.objects.all()
+    permission_classes = [IsAuthenticated]
+    def delete(self, request: Request,*args, **kwargs):
+
+        return self.destroy(request,*args, **kwargs)
+
+
 
 class PropertyImportExportview(generics.GenericAPIView):
-    serializer_class=exporttoexcel
+    serializer_class=ProperySerializer
     def get(self,request:Request,*args,**kwargs):
         property_obj=PropertyDetail.objects.all()
-        serialize=exporttoexcel(property_obj,many=True)
+        serialize=ProperySerializer(property_obj,many=True)
         df=pd.DataFrame(serialize.data)
         df.to_excel("output1.xlsx")
         return Response(data="export file is done",status=status.HTTP_200_OK)
@@ -96,9 +110,9 @@ class propertyexportview(generics.GenericAPIView):
             reader.drop_duplicates(subset=["phone_number","adhar_num"],keep="last",inplace=True)
             
             for fields in (reader.values.tolist()):
-                filter_data=PropertyDetail.objects.filter(owner=request.user, phone_number=fields[8],adhar_num=fields[11])
+                filter_data=PropertyDetail.objects.filter(phone_number=fields[8],adhar_num=fields[11])
                 if filter_data.exists():
-                    continue
+                   continue
                 else:
                     PropertyDetail.objects.create(
                         owner=request.user,
@@ -121,26 +135,8 @@ class propertyexportview(generics.GenericAPIView):
             
             return Response(data={"success":"added new property"})
         return Response(data={"message":"not valid data","error":serialize.errors},status=status.HTTP_400_BAD_REQUEST)
-
-
-
-class PropertyUpdateApiView(
-    generics.GenericAPIView,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-):
-    serializer_class = ProperySerializer
-    queryset = PropertyDetail.objects.all()
-    #permission_classes = [IsAuthenticated, OwnerOrReadObly]
-    
-    def put(self, request: Request, *args, **kwargs):
-        #permission_classes = [OwnerOrReadObly]
-
-        return self.update(request,*args, **kwargs)
-    
-    def get(self,request:Request,*args,**kwargs):
-        return self.retrieve(request,*args,**kwargs)
+            
 
 
         
+

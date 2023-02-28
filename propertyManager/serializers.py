@@ -16,10 +16,7 @@ class CurrentUserPropertySerialzer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'property']
 
-class exporttoexcel(serializers.ModelSerializer):
-    class Meta:
-        model=PropertyDetail
-        exclude="adhar_pic","property_pic","owner"
+
     
 class ImportSerializer(serializers.ModelSerializer):
     class Meta:

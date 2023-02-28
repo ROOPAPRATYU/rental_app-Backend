@@ -45,7 +45,7 @@ class TenetListView(generics.ListAPIView):
 
 class OwnerRegisterView(generics.CreateAPIView):
     serializer_class = OwnerRegisterSerializer
-    permission_classes = [AllowAny]
+    permission_classes =[AllowAny]
 
     def post(self, request: Request):
         serializer = self.serializer_class(data=request.data)
@@ -109,6 +109,8 @@ class User_logout(APIView):
 
     def get(self, request: Request, *args, **kwargs):
         
+      
+        request.user.auth_token.delete()
         logout(request)
         response = {
             "message": "Logout Successfully"

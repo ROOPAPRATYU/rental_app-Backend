@@ -16,7 +16,7 @@ from datetime import timedelta
 from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+TEMPLATE_DIR=Path(BASE_DIR,'templates')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -94,12 +94,11 @@ CORS_ALLOWED_ORIGINS = [
 
 ROOT_URLCONF = 'rental_application.urls'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(BASE_DIR,'build')
-        ],
+        'DIRS': [TEMPLATE_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -161,9 +160,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS=[
-    os.path.join(BASE_DIR,'build/static')
-]
+#STATICFILES_DIRS=[os.path.join(BASE_DIR,"build/static")]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -189,3 +186,12 @@ CELERY_BEAT_SCHEDULER="django_celery_beat.schedulers:DatabaseScheduler"
 TWILIO_ACCOUNT_SID='AC74043bacf892c093c3c0a87b54a4393e'
 TWILIO_AUTH_TOKEN='66090e8aef8e7022b3d89f3a633b3bd1'
 #ALLOWED_HOSTS=['76ff-117-99-244-24.in.ngrok.io']
+
+# email configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'roopamugappa@gmail.com' 
+EMAIL_HOST_PASSWORD = 'rbkwqjwsuuwfayzt'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL=False

@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import User
+import uuid
 # Create your models here.
 class PropertyDetail(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='property')
@@ -15,6 +16,9 @@ class PropertyDetail(models.Model):
     adhar_num=models.CharField(max_length=12)
     adhar_pic=models.FileField(upload_to="adhar_card",null=True)
     property_pic=models.FileField(upload_to="Propery_image", null=True)
+    is_tenant_active=models.BooleanField(default=True)
+    is_paid=models.BooleanField(default=False)
+    rent_token=models.CharField(max_length=100,default=uuid.uuid4)
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self) -> str:

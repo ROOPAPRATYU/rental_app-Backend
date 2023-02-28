@@ -1,0 +1,15 @@
+{%autoescape off%}
+Dear {{tenant_name}},
+
+This is a reminder to pay your rent for {{property_name}}. Your rent of {{rent_amount}} is due by
+03/{{month}}/{{year}}.Kindly pay the rent to avoid any late fees.
+
+If you already paid the rent, please acknowledge the same by clicking the link to notify the property owner.
+
+http://127.0.0.1:8000/sms/varify/{{rent_token}}
+
+
+Thank You and Have a Good Day
+{{owner_name}}
+
+{%endautoescape%}
