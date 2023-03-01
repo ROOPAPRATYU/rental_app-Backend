@@ -65,7 +65,13 @@ def change_status(request):
     except:
         return ("no change in status")
 
- 
+@shared_task(bind=True)
+def send_mail_to_owner(request):
+    owner=User.objects.values_list("email")
+    subject="Rent paid"
+    msg="rent paid"
+    send_mail(subject,msg,EMAIL_HOST_USER,owner[0])
+    return ("email sent to owner")
 
 
     

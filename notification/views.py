@@ -27,7 +27,8 @@ def verify_payment_token(request,token):
         obj=PropertyDetail.objects.get(rent_token=token)
         obj.is_paid=True
         obj.save()
-        return HttpResponse("THank you for confirming ur rent pay")
+        send_mail_to_owner.delay()
+        return HttpResponse("Thank you for confirming your rent pay sent email to owner")
     except Exception as e:
         return HttpResponse("invalid token")
 
