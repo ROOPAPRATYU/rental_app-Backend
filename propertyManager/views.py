@@ -1,5 +1,5 @@
 from .serializers import CurrentUserPropertySerialzer,ImportSerializer
-
+from django.http import FileResponse
 from . permissions import OwnerOrReadObly
 from django.shortcuts import render, get_object_or_404
 from rest_framework import mixins, status, generics
@@ -97,8 +97,11 @@ class PropertyImportExportview(generics.GenericAPIView):
         property_obj=PropertyDetail.objects.all()
         serialize=ProperySerializer(property_obj,many=True)
         df=pd.DataFrame(serialize.data)
-        df.to_excel("output1.xlsx")
-        return Response(data="export file is done",status=status.HTTP_200_OK)
+        excel_file = "output1.xlsx"
+        df.to_excel(excel_file)
+        response = FileResponse(open(excel_file, 'rb'))
+        response['Content-Disposition'] = 'attachment; filename="output1.xlsx"'
+        return response
     
 class propertyexportview(generics.GenericAPIView):
     serializer_class=ImportSerializer

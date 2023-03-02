@@ -12,7 +12,7 @@ urlpatterns = [
     path('property/', include('propertyManager.urls')),
     path('accounts/', include('accounts.urls')),
     path('sms/', include("notification.urls")),
-    #path('',TemplateView.as_view(template_name="index.html")),
+    path('',TemplateView.as_view(template_name="index.html")),
     
 
 

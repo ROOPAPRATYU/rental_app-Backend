@@ -8,10 +8,13 @@ from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from user_profile.models import OwnerProfile
 
-
+from  accounts.models import User
+import requests
+import json
 
 from propertyManager.models import PropertyDetail
 client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+#to send due notification via
 @shared_task(bind=True)
 def send_notification(request):
     #collect ("email","rent_date","rent","phone_number") data from the propertydetails database table
@@ -21,19 +24,23 @@ def send_notification(request):
         message = client.messages.create(from_='whatsapp:+14155238886',body='Hi {} please pay your rent amount {} for property {}({}BHK) ,your rent on due please pay before {}/{}/{},if already paid please ignore it'.format(userinfo[4],userinfo[2],userinfo[5],userinfo[6],timing.day,timing.month,timing.year),to='whatsapp:+91{}'.format(8880869502))
             
     return ('Great! Expect a message on whatsapp..')
-
+#to perform the email due notification via send_email
 @shared_task(bind=True)
 def send_email_notification(request):
-    owner=OwnerProfile.objects.values_list("first_name")
-    owner1=OwnerProfile.objects.values_list("last_name")
-    tenentdetails=PropertyDetail.objects.values_list("email","rent_date","rent","phone_number","tenant_name","property_name","bhk","is_paid","rent_token","is_tenant_active")
+    
+    tenentdetails=PropertyDetail.objects.values_list("email","rent_date","rent","phone_number","tenant_name","property_name","bhk","is_paid","rent_token","is_tenant_active","owner","owner__email")
+    
     for userinfo in tenentdetails:
+        #get owner email id
+        obj=OwnerProfile.objects.filter(user_id=userinfo[10])
+        owner2=obj.values_list("first_name","last_name")
         timing=datetime.datetime.today()
         month=timing.month
         year=timing.year
         if userinfo[0] is not None and userinfo[7]==False and userinfo[9]==True:
             #curent_site=get_current_site(request)
             subject = "Property {} Rent Remeinder".format(userinfo[5])
+            
             msg=render_to_string("duenotification.html",{
                 "tenant_name":userinfo[4],
                 "property_name":userinfo[5],
@@ -43,15 +50,18 @@ def send_email_notification(request):
                 "rent_token":userinfo[8],
                 "month":month,
                 "year":year,
-                "owner_name":owner[0],
-                "owner":owner1[0]
+                "owner":owner2,
+                "owner_mail":userinfo[11]
+                #"owner_detals":userinfo[10].email
+
 
                 #"domain":curent_site
             })
             to =  userinfo[0] 
             send_mail(subject,msg,EMAIL_HOST_USER, [to])
-    return ("great expect a message on ur email")
-   
+            
+    return ("great expect a email on tenant email")
+#to change the is_paid value everymonth
 @shared_task(bind=True)
 def change_status(request):
     tenentdetails=PropertyDetail.objects.values_list("is_tenant_active","is_paid")
@@ -64,15 +74,38 @@ def change_status(request):
         return ("changed the status for is_paid rent")
     except:
         return ("no change in status")
-
 @shared_task(bind=True)
-def send_mail_to_owner(request):
-    owner=User.objects.values_list("email")
-    subject="Rent paid"
-    msg="rent paid"
-    send_mail(subject,msg,EMAIL_HOST_USER,owner[0])
-    return ("email sent to owner")
+def send_mail_to_owner(request,token):
+    tenentdetails=PropertyDetail.objects.values_list("email","rent_date","rent","phone_number","tenant_name","property_name","bhk","is_paid","rent_token","is_tenant_active","owner","owner__email")
+    for userinfo in tenentdetails:
+        #get owner email id
+        obj=OwnerProfile.objects.filter(user_id=userinfo[10])
+        owner2=obj.values_list("first_name","last_name")
+        timing=datetime.datetime.today()
+        month=timing.month
+        year=timing.year
+        url="http://127.0.0.1:8000/sms/varify/{}".format(userinfo[8])
+        url=requests.get(url=url)
+        if userinfo[0] is not None and token==userinfo[8]:
+            #curent_site=get_current_site(request)
+            subject = "Property {} Rent Paid".format(userinfo[5])
+            
+            msg=render_to_string("notify_owner.html",{
+                "tenant_name":userinfo[4],
+                "property_name":userinfo[5],
+                
+                "rent_amount":userinfo[2],
+                "month":month,
+                "year":year,     
+                "owner":owner2,
+                #"owner_detals":userinfo[10].email
 
 
-    
+                #"domain":curent_site
+            })
+            to =  userinfo[11]
+            
 
+            send_mail(subject,msg,EMAIL_HOST_USER, [to])
+            
+    return ("great expect a email on owner")
